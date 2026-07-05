@@ -8,6 +8,8 @@ async function safeFetch(url, signal) {
   return json.data
 }
 
+// Trending songs are fetched from the API once on mount, and pinned songs
+
 export async function getTrending() {
   const data = await safeFetch(`${API}/api/trending/songs?page=1&limit=16`)
   return data?.results || []

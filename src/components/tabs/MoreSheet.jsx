@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { Trash2, ListX, Info, X } from 'lucide-react'
 import { useLibrary } from '../../store/libraryStore'
+import ProfileCard from '../profile/ProfileCard'
+import ProfileEditSheet from '../profile/ProfileEditSheet'
 
 // Simple glass bottom sheet. Not tied to BottomNav's `active` state on
 // purpose — it's an overlay action, not a page, so opening it never
@@ -7,6 +10,8 @@ import { useLibrary } from '../../store/libraryStore'
 export default function MoreSheet({ open, onClose }) {
   const clearRecent = useLibrary((s) => s.clearRecent)
   const clearPlaylist = useLibrary((s) => s.clearPlaylist)
+
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
 
   return (
     <div
@@ -43,6 +48,10 @@ export default function MoreSheet({ open, onClose }) {
           </button>
         </div>
 
+        <ProfileCard onEdit={() => setIsEditingProfile(true)} />
+
+        <div className="my-4 border-t border-line" />
+
         <div className="flex flex-col gap-1">
           <button
             type="button"
@@ -73,6 +82,8 @@ export default function MoreSheet({ open, onClose }) {
           </div>
         </div>
       </div>
+
+      <ProfileEditSheet isOpen={isEditingProfile} onClose={() => setIsEditingProfile(false)} />
     </div>
   )
 }
