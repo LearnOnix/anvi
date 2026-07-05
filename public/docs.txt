@@ -1,0 +1,35 @@
+src/
+  api/
+    jiosaavn.js          // getTrending(), searchSongs(query)
+  hooks/
+    useLocalStorage.js   // generic persistent-state hook
+    useDebounce.js        // debounce search input
+    useMediaQuery.js      // isNarrow() check for volume popover
+  store/
+    playerStore.js        // zustand: current song, queue, isPlaying, volume
+    libraryStore.js        // zustand + localStorage: recent[], playlist[]
+  components/
+    layout/
+      TopBar.jsx           // brand + SearchInput
+      Hero.jsx
+    tabs/
+      TabBar.jsx           // trending / recent / playlist buttons
+    songs/
+      SongGrid.jsx
+      SongCard.jsx         // thumb, play overlay, add-to-playlist btn
+      SongCardSkeleton.jsx
+      EmptyState.jsx
+    player/
+      PlayerBar.jsx        // grid layout: now-playing / controls / seek / volume
+      NowPlaying.jsx        // lantern art + orbit rings
+      PlaybackControls.jsx // prev/play/next
+      SeekBar.jsx
+      VolumeControl.jsx     // inline slider (desktop) + popover (mobile)
+    background/
+      AnuField.jsx          // canvas particle field, mounted once at App root
+  utils/
+    song.js                // artistName(), thumbUrl(), audioUrl(), songId()
+    format.js               // fmtTime()
+  App.jsx
+  main.jsx
+  index.css                // @import "tailwindcss"; + custom theme tokens

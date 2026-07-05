@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg0: #060907;
+  --color-bg1: #0c1712;
+  --color-bg2: #0f1d16;
+  --color-panel: rgba(220, 255, 205, 0.035);
+  --color-line: rgba(206, 255, 196, 0.1);
+  --color-ink: #eef6ea;
+  --color-muted: #8ea38c;
+  --color-faint: #5f7264;
+  --color-mote: #d8f79b;
+  --color-amber: #ffb86b;
+  --color-teal: #67d9c4;
+
+  --font-display: "Zen Maru Gothic", sans-serif;
+  --font-body: "Figtree", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    @apply font-body text-ink;
+    background:
+      radial-gradient(60% 45% at 12% 0%, rgba(103, 217, 196, 0.10), transparent 65%),
+      radial-gradient(50% 40% at 100% 10%, rgba(216, 247, 155, 0.07), transparent 70%),
+      linear-gradient(190deg, var(--color-bg0), var(--color-bg1) 55%, var(--color-bg2));
+    overflow-x: hidden;
+  }
+  ::selection { background: rgba(216, 247, 155, 0.28); color: #08120a; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: rgba(216, 247, 155, 0.16); border-radius: 99px; }
+}
+
+@layer utilities {
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .animate-shimmer { animation: shimmer 1.3s infinite; }
+
+  @keyframes breathe {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 184, 107, 0.25); transform: scale(1); }
+    50% { box-shadow: 0 0 14px 3px rgba(255, 184, 107, 0.28); transform: scale(1.06); }
+  }
+  .animate-breathe { animation: breathe 2.6s ease-in-out infinite; }
+
+  /* thumbnail range input, styled the same on webkit + firefox */
+  input[type="range"].kd-range {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    outline-offset: 4px;
+  }
+  input[type="range"].kd-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-ink);
+    border: 2px solid var(--color-bg0);
+    box-shadow: 0 0 0 2px rgba(216, 247, 155, 0.4);
+    margin-top: -4px;
+  }
+  input[type="range"].kd-range::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-ink);
+    border: 2px solid var(--color-bg0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .motion-safe-only { animation: none !important; }
+  }
+}
