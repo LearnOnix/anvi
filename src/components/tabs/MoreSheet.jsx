@@ -76,7 +76,7 @@ export default function MoreSheet({ open, onClose }) {
           <div className="flex items-start gap-3 rounded-xl px-3 py-3 text-left text-sm text-muted">
             <Info size={18} className="mt-0.5 shrink-0" />
             <span>
-              Anu keeps your recently played and playlist saved on this device only —
+              moo keeps your recently played and playlist saved on this device only —
               clearing here can't be undone.
             </span>
           </div>

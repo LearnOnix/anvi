@@ -15,7 +15,7 @@ export default function TopBar() {
             />
           </span>
           <div className="font-display text-lg font-black tracking-tight">
-            Anu<span className="text-mote">.</span>
+            Moon<span className="text-mote">.</span>
           </div>
         </div>
 
