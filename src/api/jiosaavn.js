@@ -1,4 +1,4 @@
-const API = 'https://elitejiosaavn-api.vercel.app'
+const API = import.meta.env.VITE_JIOSAAVN_API
 
 async function safeFetch(url, signal) {
   const res = await fetch(url, { signal })
