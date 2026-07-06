@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Trash2, ListX, Info, X } from 'lucide-react'
+import { Trash2, ListX, Info, X, Download, Check, Loader2 } from 'lucide-react'
 import { useLibrary } from '../../store/libraryStore'
+import { useInstallPrompt } from '../../hooks/useInstallPrompt'
 import ProfileCard from '../profile/ProfileCard'
 import ProfileEditSheet from '../profile/ProfileEditSheet'
 
@@ -12,6 +13,22 @@ export default function MoreSheet({ open, onClose }) {
   const clearPlaylist = useLibrary((s) => s.clearPlaylist)
 
   const [isEditingProfile, setIsEditingProfile] = useState(false)
+
+  const { canInstall, promptInstall } = useInstallPrompt()
+  const [installPhase, setInstallPhase] = useState('idle') // idle | prompting | success
+  const showInstallCard = canInstall || installPhase === 'success'
+
+  async function handleInstall() {
+    if (installPhase === 'prompting') return
+    setInstallPhase('prompting')
+    const outcome = await promptInstall()
+    if (outcome === 'accepted') {
+      setInstallPhase('success')
+      setTimeout(() => setInstallPhase('idle'), 1800)
+    } else {
+      setInstallPhase('idle')
+    }
+  }
 
   return (
     <div
@@ -50,6 +67,51 @@ export default function MoreSheet({ open, onClose }) {
 
         <ProfileCard onEdit={() => setIsEditingProfile(true)} />
 
+        {showInstallCard && (
+          <button
+            type="button"
+            onClick={handleInstall}
+            disabled={installPhase === 'prompting'}
+            className={`group relative mt-3 flex w-full items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3.5 text-left transition-all active:scale-[0.99] ${
+              installPhase === 'success'
+                ? 'border-mote/50 bg-mote/[0.08]'
+                : 'border-mote/25 bg-mote/[0.05] hover:border-mote/40 hover:bg-mote/[0.08]'
+            }`}
+          >
+            {/* breathing glow ring behind the icon — the "look at me once" moment */}
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center">
+              {installPhase !== 'success' && (
+                <span
+                  className="absolute inset-0 rounded-full bg-mote/25"
+                  style={{ animation: 'install-pulse 2.2s ease-in-out infinite' }}
+                />
+              )}
+              <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-mote/15 text-mote">
+                {installPhase === 'prompting' ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : installPhase === 'success' ? (
+                  <span style={{ animation: 'pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1)' }}>
+                    <Check size={18} />
+                  </span>
+                ) : (
+                  <Download size={18} />
+                )}
+              </span>
+            </span>
+
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-ink">
+                {installPhase === 'success' ? 'Installed!' : 'Install Moon'}
+              </span>
+              <span className="block text-xs text-muted">
+                {installPhase === 'success'
+                  ? 'Find it on your home screen or desktop'
+                  : 'Add to your home screen or desktop, works offline'}
+              </span>
+            </span>
+          </button>
+        )}
+
         <div className="my-4 border-t border-line" />
 
         <div className="flex flex-col gap-1">
@@ -76,7 +138,7 @@ export default function MoreSheet({ open, onClose }) {
           <div className="flex items-start gap-3 rounded-xl px-3 py-3 text-left text-sm text-muted">
             <Info size={18} className="mt-0.5 shrink-0" />
             <span>
-              moo keeps your recently played and playlist saved on this device only —
+              moon keeps your recently played and playlist saved on this device only —
               clearing here can't be undone.
             </span>
           </div>
@@ -84,6 +146,20 @@ export default function MoreSheet({ open, onClose }) {
       </div>
 
       <ProfileEditSheet isOpen={isEditingProfile} onClose={() => setIsEditingProfile(false)} />
+
+      <style>{`
+        @keyframes install-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.5; }
+          50% { transform: scale(1.35); opacity: 0; }
+        }
+        @keyframes pop-in {
+          0% { transform: scale(0.4); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [style*="animation"] { animation: none !important; }
+        }
+      `}</style>
     </div>
   )
 }
