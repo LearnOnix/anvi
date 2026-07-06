@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Search } from 'lucide-react'
 import NowPlaying from '../player/NowPlaying'
 
 // --- Design notes -----------------------------------------------------
@@ -15,7 +16,7 @@ import NowPlaying from '../player/NowPlaying'
 // the bar — the "song just started" moment you asked for. Everything
 // else stays quiet so it reads minimal, not busy.
 //
-// Usage: <TopBar trackId={currentTrack?.id} />
+// Usage: <TopBar trackId={currentTrack?.id} onSearchClick={...} />
 // If you don't have a stable id handy, any value that changes when a new
 // song starts (title+artist string, queue index, etc.) works fine.
 // ------------------------------------------------------------------------
@@ -109,7 +110,7 @@ function BurstPetals({ burstId }) {
   )
 }
 
-export default function TopBar({ trackId }) {
+export default function TopBar({ trackId, onSearchClick }) {
   const [burstId, setBurstId] = useState(0)
   const prevTrack = useRef(trackId)
   const clearTimer = useRef(null)
@@ -181,13 +182,23 @@ export default function TopBar({ trackId }) {
           </div>
         </div>
 
-        <div className="flex min-w-0 max-w-[65%] flex-1 justify-end overflow-hidden sm:max-w-[70%]">
+        <div className="flex min-w-0 max-w-[50%] flex-1 justify-end overflow-hidden sm:max-w-[58%]">
           {/* second glass tier: a soft pill behind NowPlaying so it sits
               on its own layer of depth rather than flush on the bar */}
           <div className="min-w-0 rounded-full bg-white/[0.04] px-1 py-0.5 ring-1 ring-white/[0.06] backdrop-blur-md">
             <NowPlaying />
           </div>
         </div>
+
+        {/* search shortcut — same glass language as the rest of the bar */}
+        <button
+          type="button"
+          onClick={onSearchClick}
+          aria-label="Search"
+          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink backdrop-blur-md bg-white/[0.06] border border-white/10 transition-all hover:bg-white/[0.12] hover:border-[#8FA3FF]/30 active:scale-90"
+        >
+          <Search size={16} />
+        </button>
       </div>
 
       <style>{`

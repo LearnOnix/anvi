@@ -7,4 +7,7 @@ export const useUI = create((set) => ({
   openPlayer: () => set({ isPlayerExpanded: true }),
   closePlayer: () => set({ isPlayerExpanded: false }),
   togglePlayer: () => set((s) => ({ isPlayerExpanded: !s.isPlayerExpanded })),
+  pendingPlaylistSong: null,
+openAddToPlaylist: (song) => set({ pendingPlaylistSong: song }),
+closeAddToPlaylist: () => set({ pendingPlaylistSong: null }),
 }))

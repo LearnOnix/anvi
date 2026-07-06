@@ -1,15 +1,16 @@
 import { Play, Plus, Check } from 'lucide-react'
 import { usePlayer } from '../../store/playerStore'
 import { useLibrary } from '../../store/libraryStore'
+import { useUI } from '../../store/uiStore'
 import { artistName, thumbUrl, songId } from '../../utils/song'
 
 export default function SongCard({ song, list, index }) {
   const playFromQueue = usePlayer((s) => s.playFromQueue)
   const currentSong = usePlayer((s) => s.currentSong())
-  const isInPlaylist = useLibrary((s) => s.isInPlaylist)
-  const toggleInPlaylist = useLibrary((s) => s.toggleInPlaylist)
+  const isSongInAnyPlaylist = useLibrary((s) => s.isSongInAnyPlaylist)
+  const openAddToPlaylist = useUI((s) => s.openAddToPlaylist)
 
-  const added = isInPlaylist(song)
+  const added = isSongInAnyPlaylist(song)
   const isActive = currentSong && songId(currentSong) === songId(song)
 
   return (
@@ -35,8 +36,8 @@ export default function SongCard({ song, list, index }) {
 
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); toggleInPlaylist(song) }}
-        aria-label={added ? 'Remove from playlist' : 'Add to playlist'}
+        onClick={(e) => { e.stopPropagation(); openAddToPlaylist(song) }}
+        aria-label={added ? 'Manage playlists' : 'Add to playlist'}
         className={`absolute right-1.5 top-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full border transition-all
           opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 group-focus-within:opacity-100 group-focus-within:scale-100
           [@media(hover:none)]:opacity-100 [@media(hover:none)]:scale-100

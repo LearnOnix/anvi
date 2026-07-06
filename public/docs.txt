@@ -1,35 +1,62 @@
 src/
-  api/
-    jiosaavn.js          // getTrending(), searchSongs(query)
-  hooks/
-    useLocalStorage.js   // generic persistent-state hook
-    useDebounce.js        // debounce search input
-    useMediaQuery.js      // isNarrow() check for volume popover
-  store/
-    playerStore.js        // zustand: current song, queue, isPlaying, volume
-    libraryStore.js        // zustand + localStorage: recent[], playlist[]
-  components/
-    layout/
-      TopBar.jsx           // brand + SearchInput
-      Hero.jsx
-    tabs/
-      TabBar.jsx           // trending / recent / playlist buttons
-    songs/
-      SongGrid.jsx
-      SongCard.jsx         // thumb, play overlay, add-to-playlist btn
-      SongCardSkeleton.jsx
-      EmptyState.jsx
-    player/
-      PlayerBar.jsx        // grid layout: now-playing / controls / seek / volume
-      NowPlaying.jsx        // lantern art + orbit rings
-      PlaybackControls.jsx // prev/play/next
-      SeekBar.jsx
-      VolumeControl.jsx     // inline slider (desktop) + popover (mobile)
-    background/
-      AnuField.jsx          // canvas particle field, mounted once at App root
-  utils/
-    song.js                // artistName(), thumbUrl(), audioUrl(), songId()
-    format.js               // fmtTime()
-  App.jsx
-  main.jsx
-  index.css                // @import "tailwindcss"; + custom theme tokens
+├── api/
+│   └── jiosaavn.js                  ✏️ (env var se API base URL)
+│
+├── config/
+│   ├── pinnedSongs.js                🆕 (PINNED_TRENDING array)
+│   └── moodCategories.js             🆕 (MOOD_CATEGORIES + TOP_SINGERS)
+│
+├── store/
+│   ├── playerStore.js                ✏️ (clearCurrent action add karna tha)
+│   ├── libraryStore.js               ✏️ (poora rewrite — named playlists)
+│   └── uiStore.js                    ✏️ (pendingPlaylistSong, openAddToPlaylist, closeAddToPlaylist)
+│
+├── utils/
+│   ├── song.js                       ⚪ (untouched — songId, thumbUrl, etc.)
+│   └── format.js                     ⚪ (untouched — fmtTime)
+│
+├── hooks/
+│   ├── useDebounce.js                ⚪
+│   ├── useAudioEngine.js             ⚪
+│   └── useMediaQuery.js              ⚪
+│
+├── components/
+│   ├── background/
+│   │   └── AnuField.jsx              ⚪
+│   │
+│   ├── layout/
+│   │   ├── TopBar.jsx                ✏️ ("Moon." advanced version + search button)
+│   │   ├── SearchBar.jsx             ⚪
+│   │   └── Hero.jsx                  ⚪ (ab conditionally render hota hai)
+│   │
+│   ├── tabs/
+│   │   ├── BottomNav.jsx             ✏️ (Moods tab add hua)
+│   │   └── MoreSheet.jsx             ⚪
+│   │
+│   ├── songs/
+│   │   ├── SongGrid.jsx              ⚪
+│   │   ├── SongCard.jsx              ✏️ (+ button ab openAddToPlaylist kholta hai)
+│   │   ├── SongCardSkeleton.jsx      ⚪
+│   │   └── EmptyState.jsx            ⚪
+│   │
+│   ├── player/
+│   │   ├── PlayerBar.jsx             ✏️ (cross button + if(!song) return null)
+│   │   ├── PlaybackControls.jsx      ⚪
+│   │   ├── SeekBar.jsx               ⚪
+│   │   ├── VolumeControl.jsx         ⚪
+│   │   ├── NowPlaying.jsx            ✏️ (cross button)
+│   │   └── FullPlayerSheet.jsx       ⚪
+│   │
+│   ├── moods/                        🆕 (naya folder)
+│   │   ├── SongRow.jsx               🆕 (har category/singer ki horizontal row)
+│   │   └── MoodsPage.jsx             🆕 (Moods tab ka poora page)
+│   │
+│   ├── playlist/                     🆕 (naya folder)
+│   │   ├── AddToPlaylistSheet.jsx    🆕 (App-level, uiStore se song leta hai)
+│   │   └── PlaylistsOverview.jsx     🆕 (Playlist tab ki list — sab playlists)
+│   │
+│   └── profile/
+│       ├── ProfileCard.jsx           ⚪
+│       └── ProfileEditSheet.jsx      ⚪
+│
+└── App.jsx                           ✏️ (sabse zyada badla — routing, hero condition, trackId, sheet mounting)
