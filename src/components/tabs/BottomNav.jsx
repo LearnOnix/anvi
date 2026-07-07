@@ -1,11 +1,10 @@
-import { TrendingUp, History, ListMusic, Search, MoreHorizontal, Sparkles } from 'lucide-react'
+import { TrendingUp, History, ListMusic, MoreHorizontal, Sparkles } from 'lucide-react'
 
 const TABS = [
   { id: 'trending', label: 'trending', icon: TrendingUp },
   { id: 'moods', label: 'moods', icon: Sparkles },
   { id: 'recent', label: 'recent', icon: History, countKey: 'recentCount' },
   { id: 'playlist', label: 'playlist', icon: ListMusic, countKey: 'playlistCount' },
-  { id: 'search', label: 'search', icon: Search },
   { id: 'more', label: 'more', icon: MoreHorizontal, isAction: true },
 ]
 

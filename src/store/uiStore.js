@@ -10,4 +10,9 @@ export const useUI = create((set) => ({
   pendingPlaylistSong: null,
 openAddToPlaylist: (song) => set({ pendingPlaylistSong: song }),
 closeAddToPlaylist: () => set({ pendingPlaylistSong: null }),
+
+pendingDownloadSong: null,
+openDownloadOptions: (song) => set({ pendingDownloadSong: song }),
+closeDownloadOptions: () => set({ pendingDownloadSong: null }),
+
 }))

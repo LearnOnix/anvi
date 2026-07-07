@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronLeft } from 'lucide-react'
 import AnuField from './components/background/AnuField'
 import TopBar from './components/layout/TopBar'
@@ -10,14 +10,17 @@ import SongGrid from './components/songs/SongGrid'
 import PlayerBar from './components/player/PlayerBar'
 import MoodsPage from './components/moods/MoodsPage'
 import PlaylistsOverview from './components/playlist/PlaylistsOverview'
+import DownloadsPage from './components/playlist/DownloadsPage'
 import { getTrending, searchSongs } from './api/jiosaavn'
 import { useDebounce } from './hooks/useDebounce'
 import { useAudioEngine } from './hooks/useAudioEngine'
+import { useAppView } from './hooks/useAppView'
 import { useLibrary } from './store/libraryStore'
 import { PINNED_TRENDING } from './config/pinnedSongs'
 import { usePlayer } from './store/playerStore'
 import { songId } from './utils/song'
 import AddToPlaylistSheet from './components/playlist/AddToPlaylistSheet'
+import DownloadOptionSheet from './components/playlist/DownloadOptionSheet'
 
 export default function App() {
   useAudioEngine()
@@ -28,9 +31,7 @@ export default function App() {
   const debouncedQuery = useDebounce(query, 420)
   const isSearching = debouncedQuery.trim().length > 0
 
-  const [activeTab, setActiveTab] = useState('trending')
   const [moreOpen, setMoreOpen] = useState(false)
-  const [activePlaylistId, setActivePlaylistId] = useState(null)
 
   const [trending, setTrending] = useState([])
   const [trendingLoading, setTrendingLoading] = useState(true)
@@ -44,6 +45,34 @@ export default function App() {
   const clearPlaylistSongs = useLibrary((s) => s.clearPlaylistSongs)
 
   const playlistCount = Object.values(playlists).reduce((sum, pl) => sum + pl.songs.length, 0)
+
+  const {
+    activeTab,
+    setActivePlaylistId,
+    handleTabChange: handleTabChangeBase,
+    activePlaylist,
+    showDownloads,
+    showPlaylistsOverview,
+    showMoodsPage,
+    showSongGrid,
+    view,
+  } = useAppView({
+    isSearching,
+    debouncedQuery,
+    searchResults,
+    searchLoading,
+    trending,
+    trendingLoading,
+    recent,
+    clearRecent,
+    playlists,
+    clearPlaylistSongs,
+  })
+
+  function handleTabChange(tab) {
+    handleTabChangeBase(tab)
+    setQuery('')
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -78,77 +107,6 @@ export default function App() {
     return () => controller.abort()
   }, [debouncedQuery, isSearching])
 
-  function handleTabChange(tab) {
-    setActiveTab(tab)
-    setQuery('')
-    if (tab !== 'playlist') setActivePlaylistId(null)
-  }
-
-  const activePlaylist = activePlaylistId ? playlists[activePlaylistId] : null
-
-  const view = useMemo(() => {
-    if (isSearching) {
-      return {
-        label: `results for "${debouncedQuery}"`,
-        count: searchLoading ? '' : `${searchResults.length} found`,
-        songs: searchResults,
-        loading: searchLoading,
-        emptyTitle: 'no echoes answered back.',
-        emptySub: 'the search trail went cold — try another word.',
-        showClear: false,
-      }
-    }
-    if (activeTab === 'recent') {
-      return {
-        label: 'recently played',
-        count: `${recent.length} echoes`,
-        songs: recent,
-        loading: false,
-        emptyTitle: 'nothing echoed back yet.',
-        emptySub: "play a song and it'll show up here — even after you refresh.",
-        showClear: recent.length > 0,
-        onClear: clearRecent,
-      }
-    }
-    if (activeTab === 'playlist' && activePlaylist) {
-      return {
-        label: activePlaylist.name,
-        count: `${activePlaylist.songs.length} songs`,
-        songs: activePlaylist.songs,
-        loading: false,
-        emptyTitle: 'this playlist is quiet.',
-        emptySub: 'tap the + on any song to keep it here.',
-        showClear: activePlaylist.songs.length > 0,
-        onClear: () => clearPlaylistSongs(activePlaylist.id),
-      }
-    }
-    if (activeTab === 'search') {
-      return {
-        label: 'search', count: '', songs: [], loading: false,
-        emptyTitle: 'type something above.',
-        emptySub: 'search for a song, an artist, or just a vibe.',
-        showClear: false,
-      }
-    }
-    return {
-      label: 'trending now',
-      count: trendingLoading ? '' : `${trending.length} echoes`,
-      songs: trending,
-      loading: trendingLoading,
-      emptyTitle: 'the forest went quiet.',
-      emptySub: "couldn't reach the trending feed — try again in a moment.",
-      showClear: false,
-    }
-  }, [
-    isSearching, debouncedQuery, searchResults, searchLoading,
-    activeTab, recent, trending, trendingLoading,
-    activePlaylist, clearRecent, clearPlaylistSongs,
-  ])
-
-  const showPlaylistsOverview = activeTab === 'playlist' && !activePlaylist && !isSearching
-  const showMoodsPage = activeTab === 'moods' && !isSearching
-  const showSongGrid = !showMoodsPage && !showPlaylistsOverview
-
   return (
     <>
       <AnuField />
@@ -157,7 +115,7 @@ export default function App() {
        onSearchClick={() => handleTabChange('search')} />
 
       <div className="relative z-[1] mx-auto max-w-[1180px] px-3.5 pb-[210px] sm:px-5 sm:pb-[170px]">
-  {activeTab === 'trending' && !isSearching && <Hero />}
+        {activeTab === 'trending' && !isSearching && <Hero />}
 
         {activeTab === 'search' && (
           <SearchBar query={query} onQueryChange={setQuery} onClear={() => setQuery('')} />
@@ -175,6 +133,12 @@ export default function App() {
               my playlists
             </div>
             <PlaylistsOverview onOpenPlaylist={setActivePlaylistId} />
+          </section>
+        )}
+
+        {showDownloads && (
+          <section className="mt-4">
+            <DownloadsPage onBack={() => setActivePlaylistId(null)} />
           </section>
         )}
 
@@ -230,7 +194,8 @@ export default function App() {
       </div>
 
       <MoreSheet open={moreOpen} onClose={() => setMoreOpen(false)} />
-        <AddToPlaylistSheet />
+      <DownloadOptionSheet />
+      <AddToPlaylistSheet />
     </>
   )
 }

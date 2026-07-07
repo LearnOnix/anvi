@@ -7,6 +7,8 @@ import { registerServiceWorker } from './utils/registerServiceWorker'
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
-    registerServiceWorker()
+    
   </React.StrictMode>
 )
+
+registerServiceWorker()

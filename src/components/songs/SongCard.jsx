@@ -1,7 +1,8 @@
-import { Play, Plus, Check } from 'lucide-react'
+import { Play, Plus, Check, Download } from 'lucide-react'
 import { usePlayer } from '../../store/playerStore'
 import { useLibrary } from '../../store/libraryStore'
 import { useUI } from '../../store/uiStore'
+import { useDownload } from '../../hooks/useDownload'
 import { artistName, thumbUrl, songId } from '../../utils/song'
 
 export default function SongCard({ song, list, index }) {
@@ -9,9 +10,11 @@ export default function SongCard({ song, list, index }) {
   const currentSong = usePlayer((s) => s.currentSong())
   const isSongInAnyPlaylist = useLibrary((s) => s.isSongInAnyPlaylist)
   const openAddToPlaylist = useUI((s) => s.openAddToPlaylist)
+  const openDownloadOptions = useUI((s) => s.openDownloadOptions)
 
   const added = isSongInAnyPlaylist(song)
   const isActive = currentSong && songId(currentSong) === songId(song)
+  const { status: downloadStatus } = useDownload(song)
 
   return (
     <div
@@ -46,6 +49,20 @@ export default function SongCard({ song, list, index }) {
             : 'border-white/15 bg-bg0/60 text-ink hover:border-mote/60'}`}
       >
         {added ? <Check size={14} /> : <Plus size={14} />}
+      </button>
+
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); openDownloadOptions(song) }}
+        aria-label={downloadStatus === 'saved' ? 'Downloaded — manage' : 'Download'}
+        className={`absolute left-1.5 top-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full border transition-all
+          opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 group-focus-within:opacity-100 group-focus-within:scale-100
+          [@media(hover:none)]:opacity-100 [@media(hover:none)]:scale-100
+          ${downloadStatus === 'saved'
+            ? 'border-transparent bg-mote text-bg0 opacity-100 scale-100'
+            : 'border-white/15 bg-bg0/60 text-ink hover:border-mote/60'}`}
+      >
+        {downloadStatus === 'saved' ? <Check size={14} /> : <Download size={13} />}
       </button>
     </div>
   )
