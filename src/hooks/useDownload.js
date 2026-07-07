@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { songId, audioUrl, artistName } from '../utils/song'
+import { songId, audioUrl, thumbUrl , artistName } from '../utils/song'
 import { saveDownload, getDownload, deleteDownload } from '../utils/downloadDB'
+import { ID3Writer } from 'browser-id3-writer'
 
 // status: 'checking' | 'idle' | 'downloading' | 'saved' | 'error'
 export function useDownload(song) {
@@ -58,38 +59,63 @@ export function useDownload(song) {
   // filename is controlled and it never opens a new tab; if the CDN
   // blocks CORS, falls back to a plain anchor download.
   const saveToDevice = useCallback(async () => {
-    if (!song) return 'idle'
-    const url = audioUrl(song)
-    const artist = artistName(song)
-    const filename = `${song.name}${artist ? ' - ' + artist : ''}.mp3`
+  if (!song) return 'idle'
+  const url = audioUrl(song)
+  const artist = artistName(song)
+  const filename = `${song.name}${artist ? ' - ' + artist : ''}.mp3`
 
+  try {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error('bad response')
+    const mp3Buffer = await res.arrayBuffer()
+
+    // Try to embed cover art — if this fails for any reason, fall
+    // back to the plain mp3 rather than blocking the download
+    let finalBuffer = mp3Buffer
     try {
-      const res = await fetch(url)
-      if (!res.ok) throw new Error('bad response')
-      const blob = await res.blob()
-      const objUrl = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = objUrl
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      setTimeout(() => URL.revokeObjectURL(objUrl), 4000)
-      return 'downloaded'
-    } catch (e) {
-      // CORS-blocked or network error — fallback still gives the user
-      // the file, browser may open a new tab instead of a clean save
-      const a = document.createElement('a')
-      a.href = url
-      a.download = filename
-      a.target = '_blank'
-      a.rel = 'noopener'
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      return 'fallback'
+      const imgUrl = thumbUrl(song)
+      if (imgUrl) {
+        const imgRes = await fetch(imgUrl)
+        if (imgRes.ok) {
+          const imgBuffer = await imgRes.arrayBuffer()
+          const writer = new ID3Writer(mp3Buffer)
+          writer.setFrame('TIT2', song.name)
+          if (artist) writer.setFrame('TPE1', [artist])
+          writer.setFrame('APIC', {
+            type: 3, // front cover
+            data: imgBuffer,
+            description: 'Cover',
+          })
+          writer.addTag()
+          finalBuffer = writer.arrayBuffer
+        }
+      }
+    } catch (tagErr) {
+      console.warn('Cover art embed failed, saving without it:', tagErr)
     }
-  }, [song])
+
+    const blob = new Blob([finalBuffer], { type: 'audio/mpeg' })
+    const objUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = objUrl
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(objUrl), 4000)
+    return 'downloaded'
+  } catch (e) {
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.target = '_blank'
+    a.rel = 'noopener'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    return 'fallback'
+  }
+}, [song])
 
   const remove = useCallback(async () => {
     if (!id) return
