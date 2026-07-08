@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Moon — Documentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg0: #0a0f0b;
+    --bg1: #0e1510;
+    --surface: #121a14;
+    --line: rgba(230, 240, 225, 0.08);
+    --ink: #eef2ec;
+    --muted: #8ea491;
+    --faint: #5c6e60;
+    --mote: #b7f0c9;
+    --mote-dim: rgba(183, 240, 201, 0.14);
+    --amber2: #e9d9a3;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: radial-gradient(ellipse 1200px 800px at 50% -10%, #142016 0%, var(--bg0) 55%), var(--bg0);
+    color: var(--ink);
+    font-family: 'Space Grotesk', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  #motes{
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .wrap{
+    position: relative;
+    z-index: 1;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 28px 140px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 120px 0 80px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--mote);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .eyebrow::before{
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--mote);
+    box-shadow: 0 0 10px 2px var(--mote-dim);
+  }
+  h1.title{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-style: italic;
+    font-size: clamp(48px, 8vw, 84px);
+    line-height: 1.02;
+    margin: 0 0 22px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  h1.title em{
+    font-style: normal;
+    font-weight: 600;
+    background: linear-gradient(120deg, var(--mote), var(--amber2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .tagline{
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+  .hero-meta{
+    display: flex;
+    gap: 32px;
+    margin-top: 44px;
+    flex-wrap: wrap;
+  }
+  .hero-meta div{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--faint);
+  }
+  .hero-meta strong{
+    display: block;
+    color: var(--ink);
+    font-size: 15px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  /* ---------- Section scaffolding ---------- */
+  section{
+    padding: 64px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  section:last-of-type{ border-bottom: none; }
+
+  .section-head{
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .section-num{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--mote);
+    opacity: 0.7;
+  }
+  h2{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 34px;
+    margin: 0;
+    color: var(--ink);
+  }
+  p{
+    line-height: 1.7;
+    color: var(--muted);
+    font-size: 15.5px;
+  }
+  code{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--mote-dim);
+    color: var(--mote);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  a{ color: var(--mote); text-decoration: none; border-bottom: 1px solid var(--mote-dim); }
+  a:hover{ border-color: var(--mote); }
+
+  /* ---------- Feature grid ---------- */
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .card{
+    background: var(--surface);
+    padding: 26px;
+  }
+  .card h3{
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h3::before{
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--mote);
+  }
+  .card p{ font-size: 13.5px; margin: 0; }
+
+  /* ---------- Stack pills ---------- */
+  .pills{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .pill{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    background: var(--surface);
+  }
+
+  /* ---------- Tree ---------- */
+  .tree{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    background: var(--bg1);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 28px;
+    color: var(--muted);
+    overflow-x: auto;
+  }
+  .tree .dir{ color: var(--mote); }
+  .tree .note{ color: var(--faint); }
+
+  /* ---------- Steps ---------- */
+  .steps{ counter-reset: step; }
+  .step{
+    display: flex;
+    gap: 20px;
+    padding: 20px 0;
+    border-top: 1px solid var(--line);
+  }
+  .step:first-child{ border-top: none; }
+  .step-num{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 28px;
+    color: var(--mote);
+    min-width: 36px;
+  }
+  .step-body h4{
+    margin: 0 0 6px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .step-body p{ margin: 0; font-size: 14px; }
+  pre{
+    background: var(--bg1);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 18px;
+    overflow-x: auto;
+    margin: 10px 0 0;
+  }
+  pre code{
+    background: none;
+    color: var(--ink);
+    padding: 0;
+  }
+
+  /* ---------- Table ---------- */
+  table{ width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th, td{
+    text-align: left;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--line);
+  }
+  th{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--faint);
+    font-weight: 500;
+  }
+  td{ color: var(--muted); }
+  td.k{ color: var(--ink); font-weight: 500; }
+
+  /* ---------- Footer ---------- */
+  footer{
+    padding: 60px 0 20px;
+    text-align: center;
+  }
+  footer .moon-mark{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--muted);
+  }
+  footer .moon-mark em{ color: var(--mote); font-style: normal; }
+  footer p{ font-size: 12.5px; margin-top: 10px; }
+
+  @media (max-width: 640px){
+    .grid{ grid-template-columns: 1fr; }
+    .hero{ padding: 80px 0 56px; }
+    section{ padding: 48px 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #motes{ display: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="motes"></canvas>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="eyebrow">Documentation · v1.0</div>
+    <h1 class="title">little sounds<br>that find their<br>way back to <em>Moon</em></h1>
+    <p class="tagline">An offline-first music player, built as a PWA. Search, play, save — and keep listening even when the signal doesn't reach.</p>
+    <div class="hero-meta">
+      <div>Stack<strong>Vite · React · Tailwind</strong></div>
+      <div>Storage<strong>IndexedDB + Cache API</strong></div>
+      <div>Mode<strong>Installable PWA</strong></div>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>What Moon does</h2></div>
+    <p>Moon is a lightweight music streaming app that behaves like a native one. Every song is searchable, playable instantly, and can be kept for later in one of two ways — inside the app's own library, or as a real file on the device. The interface stays quiet and dark, so nothing distracts from what's playing.</p>
+
+    <div class="grid" style="margin-top:28px;">
+      <div class="card">
+        <h3>Search &amp; play</h3>
+        <p>Debounced search against the catalog, with trending and pinned picks on the home screen.</p>
+      </div>
+      <div class="card">
+        <h3>Save in Moon</h3>
+        <p>Downloads the track into IndexedDB. Plays back offline from Moon's own library — no OS file involved.</p>
+      </div>
+      <div class="card">
+        <h3>Save to device</h3>
+        <p>Writes a real MP3 to the phone's Downloads folder, with cover art embedded via ID3 tags.</p>
+      </div>
+      <div class="card">
+        <h3>Works offline</h3>
+        <p>The app shell itself — not just saved songs — precaches on first load, so it opens with no connection at all.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STACK -->
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Built with</h2></div>
+    <p>A small, deliberate set of tools — nothing here that isn't earning its place.</p>
+    <div class="pills">
+      <span class="pill">React 18</span>
+      <span class="pill">Vite</span>
+      <span class="pill">Tailwind CSS</span>
+      <span class="pill">Zustand</span>
+      <span class="pill">Framer Motion</span>
+      <span class="pill">Lucide Icons</span>
+      <span class="pill">vite-plugin-pwa</span>
+      <span class="pill">Workbox</span>
+      <span class="pill">IndexedDB</span>
+      <span class="pill">browser-id3-writer</span>
+    </div>
+  </section>
+
+  <!-- STRUCTURE -->
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Project structure</h2></div>
+    <p>Everything lives under <code>src/</code>, grouped by what it's for rather than what type of file it is.</p>
+    <div class="tree">
+<span class="dir">public/</span>
+  manifest.json        <span class="note">— PWA identity: icons, name, theme</span>
+  icons/
+
+<span class="dir">src/</span>
+  main.jsx              <span class="note">— mounts App, registers the service worker</span>
+  sw.js                 <span class="note">— precaches the app shell for offline use</span>
+  App.jsx
+
+  <span class="dir">components/</span>
+    player/             <span class="note">— now playing, controls, seek, volume</span>
+    playlist/           <span class="note">— saved playlists, downloads, add-to-playlist</span>
+    songs/               <span class="note">— song cards, grid, empty states</span>
+    profile/             <span class="note">— local profile, avatar</span>
+    tabs/                <span class="note">— bottom nav, more sheet</span>
+
+  <span class="dir">hooks/</span>
+    useAudioEngine.js   <span class="note">— the audio element, one source of truth</span>
+    useDownload.js      <span class="note">— save-in-app / save-to-device logic</span>
+    useInstallPrompt.js <span class="note">— the "Install Moon" prompt</span>
+
+  <span class="dir">store/</span>                <span class="note">— zustand: library, player, profile, ui</span>
+  <span class="dir">utils/</span>                 <span class="note">— downloadDB, song helpers, image resize</span>
+  <span class="dir">api/</span>                   <span class="note">— jiosaavn.js, the catalog source</span>
+    </div>
+  </section>
+
+  <!-- OFFLINE / PWA -->
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>How offline actually works</h2></div>
+    <p>There are two separate systems here, and it matters to keep them apart.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>The app shell — cached by the service worker</h4>
+          <p>On first visit, <code>src/sw.js</code> precaches every built JS, CSS, and HTML file using Workbox's <code>precacheAndRoute</code>. This is what lets Moon open at all with no connection — even in a fresh tab that's never been used before.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Your music — stored in IndexedDB</h4>
+          <p>Songs saved via "Save in Moon" live in <code>downloadDB.js</code>, entirely separate from the service worker. This is why downloaded tracks keep playing offline regardless of shell-caching state.</p>
+        </div>
+      </div>
+    </div>
+
+    <pre><code>npm run build
+npm run preview</code></pre>
+    <p style="margin-top:12px; font-size:13.5px;">Service workers only behave predictably in a production build — not in <code>npm run dev</code>. Always test offline behavior against <code>preview</code>, not <code>dev</code>.</p>
+  </section>
+
+  <!-- DOWNLOAD OPTIONS -->
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>The two ways to save a song</h2></div>
+    <table>
+      <thead>
+        <tr><th>Option</th><th>Where it goes</th><th>Plays back</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="k">Save in Moon</td>
+          <td>IndexedDB, inside the app</td>
+          <td>Only from Moon's own downloaded list</td>
+        </tr>
+        <tr>
+          <td class="k">Save to device</td>
+          <td>Phone's Downloads folder, as a real .mp3</td>
+          <td>Any music player, with cover art embedded</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SETUP -->
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Getting started</h2></div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Install dependencies</h4>
+          <pre><code>npm install</code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Run locally</h4>
+          <pre><code>npm run dev</code></pre>
+          <p>Opens at <code>localhost:5173</code>. Service worker features won't precache reliably here — that's expected.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Build &amp; verify offline</h4>
+          <pre><code>npm run build
+npm run preview</code></pre>
+          <p>Check DevTools → Application → Service Workers, then toggle Network → Offline and reload.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="moon-mark">moo<em>n</em></div>
+    <p>little sounds that find their way back to you</p>
+  </footer>
+
+</div>
+
+<script>
+  // Ambient drifting motes — quiet, slow, never the focus.
+  const canvas = document.getElementById('motes');
+  const ctx = canvas.getContext('2d');
+  let w, h, motes = [];
+
+  function resize(){
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = document.body.scrollHeight;
+  }
+  function init(){
+    resize();
+    const count = Math.min(60, Math.floor(w / 22));
+    motes = Array.from({length: count}, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: Math.random() * 1.6 + 0.4,
+      vy: -(Math.random() * 0.15 + 0.03),
+      vx: (Math.random() - 0.5) * 0.08,
+      a: Math.random() * 0.5 + 0.15,
+    }));
+  }
+  function tick(){
+    ctx.clearRect(0, 0, w, h);
+    for(const m of motes){
+      m.y += m.vy;
+      m.x += m.vx;
+      if(m.y < -10){ m.y = h + 10; m.x = Math.random() * w; }
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(183, 240, 201, ${m.a})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduce){
+    init();
+    tick();
+    window.addEventListener('resize', resize);
+  }
+</script>
+
+</body>
+</html>

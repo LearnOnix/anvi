@@ -7,6 +7,8 @@ import { artistName, thumbUrl } from '../../utils/song'
 import { fmtTime } from '../../utils/format'
 import PlaybackControls from './PlaybackControls'
 
+const PLACEHOLDER =
+  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' fill='%230f1d16'/></svg>"
 // Decodes HTML entities like &quot; &amp; etc. that come from the API
 function decodeHtmlEntities(str) {
   if (!str) return str
@@ -38,7 +40,7 @@ export default function FullPlayerSheet() {
 
   const added = isInPlaylist(song)
   const pct = duration ? (currentTime / duration) * 100 : 0
-  const art = thumbUrl(song)
+  const art = thumbUrl(song) || PLACEHOLDER
 
   return (
     <div

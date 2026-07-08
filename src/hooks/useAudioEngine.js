@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { usePlayer } from '../store/playerStore'
 import { audioUrl } from '../utils/song'
 import { audioEl } from '../audio/audioElement'
+import { useMediaSession } from './useMediaSession'
 
 // Mount this once near the root of the app. It keeps the real <audio>
 // element in sync with the playerStore's intent, and pushes playback
@@ -17,7 +18,11 @@ export function useAudioEngine() {
   const isPlaying = usePlayer((s) => s.isPlaying)
   const volume = usePlayer((s) => s.volume)
   const seekTarget = usePlayer((s) => s.seekTarget)
+  const duration = usePlayer((s) => s.duration)
+  const currentTime = usePlayer((s) => s.currentTime)
   const next = usePlayer((s) => s.next)
+  const previous = usePlayer((s) => s.prev)
+  const requestSeek = usePlayer((s) => s.requestSeek)
   const setProgress = usePlayer((s) => s.setProgress)
 
   const song = currentIndex >= 0 ? queue[currentIndex] : null
@@ -100,4 +105,21 @@ export function useAudioEngine() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // OS/browser media widget — Chrome's media popup, Android lock-screen,
+  // Windows media overlay. Feeds it the current song's thumbnail/title,
+  // and wires its play/pause/next/previous/seek buttons back to the
+  // exact same store intent this hook already listens to above, so
+  // there's still only ever one source of truth for playback.
+  useMediaSession({
+    song,
+    isPlaying,
+    duration,
+    position: currentTime,
+    onPlay: () => usePlayer.setState({ isPlaying: true }),
+    onPause: () => usePlayer.setState({ isPlaying: false }),
+    onNext: next,
+    onPrevious: previous,
+    onSeekTo: (t) => requestSeek(t),
+  })
 }
