@@ -27,10 +27,31 @@ function decodeHtmlEntities(str) {
   return txt.value
 }
 
-// Full-screen "now playing" view. Minimal, quiet composition — one soft
-// bloom behind the artwork, a few drifting sparks instead of busy motion,
-// generous whitespace, thin type. The goal is a calm, anime-key-visual
-// feel rather than a "control panel."
+// Fake little equalizer bars — purely decorative, echoes the waveform
+// strip you see in YouTube Music / the reference screenshot.
+function Waveform({ active }) {
+  const bars = [6, 12, 8, 16, 10, 14, 7, 11, 9, 15, 6, 12]
+  return (
+    <div className="flex items-end gap-[3px] h-4">
+      {bars.map((h, i) => (
+        <span
+          key={i}
+          className="w-[2.5px] rounded-full bg-mote/70"
+          style={{
+            height: active ? undefined : `${Math.max(4, h * 0.4)}px`,
+            animation: active
+              ? `wfBar ${0.6 + (i % 4) * 0.15}s ease-in-out ${i * 0.05}s infinite alternate`
+              : 'none',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+// Full-screen "now playing" view, like tapping the mini-player in Spotify /
+// Apple Music. Slides up from the bottom, glass-morphic surface with ambient
+// color bleeding from the artwork, big seek bar, and larger playback controls.
 export default function FullPlayerSheet() {
   const isExpanded = useUI((s) => s.isPlayerExpanded)
   const closePlayer = useUI((s) => s.closePlayer)
@@ -44,8 +65,19 @@ export default function FullPlayerSheet() {
   const setVolume = usePlayer((s) => s.setVolume)
   const [lastVolume, setLastVolume] = useState(volume || 80)
 
-  const repeatMode = usePlayer((s) => s.repeatMode) ?? 'off'
-  const cycleRepeatMode = usePlayer((s) => s.cycleRepeatMode)
+  // --- Repeat / loop --------------------------------------------------
+  // Prefer store-driven state (so the mini-player / audio engine can also
+  // read it) but fall back to local state so this still works visually
+  // even before the store wiring is added — see the store snippet you
+  // were given alongside this file.
+  const storeRepeatMode = usePlayer((s) => s.repeatMode)
+  const storeCycleRepeatMode = usePlayer((s) => s.cycleRepeatMode)
+  const [localRepeatMode, setLocalRepeatMode] = useState('off') // 'off' | 'all' | 'one'
+  const repeatMode = storeRepeatMode ?? localRepeatMode
+  const cycleRepeatMode =
+    storeCycleRepeatMode ??
+    (() =>
+      setLocalRepeatMode((m) => (m === 'off' ? 'all' : m === 'all' ? 'one' : 'off')))
 
   const isInPlaylist = useLibrary((s) => s.isInPlaylist)
   const toggleInPlaylist = useLibrary((s) => s.toggleInPlaylist)
@@ -55,8 +87,9 @@ export default function FullPlayerSheet() {
   const added = isInPlaylist(song)
   const pct = duration ? (currentTime / duration) * 100 : 0
   const art = thumbUrl(song) || PLACEHOLDER
+
   const repeatLabel =
-    repeatMode === 'one' ? 'Repeat one' : repeatMode === 'all' ? 'Repeat all' : 'Repeat'
+    repeatMode === 'one' ? 'Repeat one' : repeatMode === 'all' ? 'Repeat all' : 'Repeat off'
 
   return (
     <div
@@ -67,72 +100,118 @@ export default function FullPlayerSheet() {
       aria-modal="true"
       aria-label="Now playing"
     >
-      {/* Quiet gradient wash — no artwork bleed, no heavy blur bloom */}
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--color-bg0),var(--color-bg1)_60%,var(--color-bg2))]" />
+      {/* Base gradient wash */}
+      <div className="absolute inset-0 bg-[linear-gradient(190deg,var(--color-bg0),var(--color-bg1)_55%,var(--color-bg2))]" />
 
-      {/* A handful of soft drifting sparks — the only ambient motion */}
-      <span className="pointer-events-none absolute left-[18%] top-[22%] h-1 w-1 rounded-full bg-mote/70 motion-reduce:hidden" style={{ animation: 'spark1 7s ease-in-out infinite' }} />
-      <span className="pointer-events-none absolute right-[22%] top-[34%] h-[3px] w-[3px] rounded-full bg-amber/60 motion-reduce:hidden" style={{ animation: 'spark2 9s ease-in-out infinite' }} />
-      <span className="pointer-events-none absolute left-[28%] bottom-[26%] h-1 w-1 rounded-full bg-mote/50 motion-reduce:hidden" style={{ animation: 'spark3 11s ease-in-out infinite' }} />
+      {/* Ambient blurred artwork bleed — ties the whole sheet's color to the song */}
+      <div
+        className="absolute inset-0 opacity-60 transition-[background-image] duration-700"
+        style={{
+          backgroundImage: `url(${art})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(90px) saturate(160%)',
+          transform: 'scale(1.3)',
+        }}
+      />
+      <div className="absolute inset-0 bg-bg0/55 backdrop-blur-3xl" />
 
-      {/* Drag handle */}
+      {/* Floating glass orbs for ambient motion */}
+      <div className="pointer-events-none absolute -left-16 top-24 h-56 w-56 rounded-full bg-mote/20 blur-[70px] motion-reduce:hidden" style={{ animation: 'driftA 14s ease-in-out infinite' }} />
+      <div className="pointer-events-none absolute -right-10 bottom-32 h-64 w-64 rounded-full bg-amber/20 blur-[80px] motion-reduce:hidden" style={{ animation: 'driftB 18s ease-in-out infinite' }} />
+
+      {/* Drag handle — mobile sheet affordance */}
       <div className="relative z-10 flex justify-center pt-3 pb-1 sm:hidden">
-        <div className="h-1 w-8 rounded-full bg-white/20" />
+        <div className="h-1.5 w-10 rounded-full bg-white/25" />
       </div>
 
-      <div className="relative z-10 flex items-center justify-between px-6 pt-3 pb-1 sm:pt-6">
+      <div className="relative z-10 flex items-center justify-between px-5 pt-3 pb-1 sm:pt-6">
         <button
           type="button"
           onClick={closePlayer}
           aria-label="Collapse player"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors hover:text-ink active:scale-90"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-ink backdrop-blur-md bg-white/[0.06] border border-white/10 transition-all hover:bg-white/[0.12] active:scale-90"
         >
-          <ChevronDown size={20} strokeWidth={1.5} />
+          <ChevronDown size={22} />
         </button>
-        <div className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted/70">
+        <div className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted backdrop-blur-md">
           now playing
         </div>
         <button
           type="button"
           onClick={() => toggleInPlaylist(song)}
           aria-label={added ? 'Remove from playlist' : 'Add to playlist'}
-          className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors active:scale-90 ${
-            added ? 'text-mote' : 'text-muted hover:text-ink'
+          className={`flex h-11 w-11 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-300 active:scale-90 ${
+            added
+              ? 'border-transparent bg-mote text-bg0 shadow-[0_0_20px_-2px_rgba(216,247,155,0.7)]'
+              : 'border-white/10 bg-white/[0.06] text-ink hover:border-mote/50'
           }`}
         >
-          {added ? <Check size={18} strokeWidth={1.5} /> : <Plus size={18} strokeWidth={1.5} />}
+          {added ? <Check size={16} /> : <Plus size={16} />}
         </button>
       </div>
 
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-8 sm:gap-10 px-8 pt-2 pb-[max(2.5rem,env(safe-area-inset-bottom))] overflow-y-auto">
-        {/* Artwork — one soft static bloom behind a slim ring, no clutter */}
-        <div className="relative aspect-square w-full max-w-[220px] sm:max-w-[270px] shrink-0">
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-5 sm:gap-7 px-6 pt-2 pb-[max(2rem,env(safe-area-inset-bottom))] overflow-y-auto">
+        {/* Circular glowing artwork — closer to the reference look */}
+        <div className="relative aspect-square w-full max-w-[240px] sm:max-w-[300px] shrink-0">
+          {/* Neon glow ring behind everything */}
           <div
-            className="absolute -inset-6 rounded-full opacity-40 blur-[50px] transition-opacity duration-700"
-            style={{ background: 'var(--color-mote)', opacity: isPlaying ? 0.4 : 0.2 }}
+            className="absolute -inset-3 rounded-full opacity-70 blur-2xl"
+            style={{
+              background:
+                'conic-gradient(from 0deg, var(--color-mote), var(--color-amber), var(--color-mote))',
+              animation: `fullSpin ${isPlaying ? '6s' : '20s'} linear infinite`,
+            }}
           />
+
+          {/* Orbiting rings, only alive while playing */}
+          <span className="absolute -inset-5 rotate-[12deg] rounded-full motion-reduce:hidden">
+            <span
+              className="absolute inset-0 rounded-full border border-mote/25"
+              style={{ animation: `fullSpin ${isPlaying ? '3.4s' : '9s'} linear infinite` }}
+            >
+              <i className="absolute -top-[3px] left-1/2 -ml-[3px] h-[6px] w-[6px] rounded-full bg-mote shadow-[0_0_10px_3px_rgba(216,247,155,0.9)]" />
+            </span>
+          </span>
+          <span className="absolute -inset-9 rotate-[-24deg] scale-y-[0.85] rounded-full motion-reduce:hidden">
+            <span
+              className="absolute inset-0 rounded-full border border-amber/25"
+              style={{ animation: `fullSpin ${isPlaying ? '5.2s' : '13s'} linear infinite reverse` }}
+            >
+              <i className="absolute -top-[3px] left-1/2 -ml-[3px] h-[6px] w-[6px] rounded-full bg-amber shadow-[0_0_10px_3px_rgba(255,184,107,0.9)]" />
+            </span>
+          </span>
+
+          {/* Glass ring frame — now circular, like a vinyl label */}
+          <div className="absolute inset-0 rounded-full bg-white/[0.04] backdrop-blur-xl border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]" />
           <img
             src={art}
             alt=""
-            className={`relative z-[1] h-full w-full rounded-full object-cover ring-1 ring-white/10 transition-transform duration-700 ${
-              isPlaying ? 'scale-100' : 'scale-[0.96]'
+            className={`relative z-[2] h-full w-full rounded-full border-2 border-white/15 object-cover shadow-2xl transition-transform duration-700 ${
+              isPlaying ? 'scale-100' : 'scale-[0.97]'
             }`}
           />
+
+          {/* Repeat-one badge sits right on the artwork when active */}
           {repeatMode === 'one' && (
-            <div className="absolute bottom-0 right-0 z-[2] flex h-8 w-8 items-center justify-center rounded-full bg-bg0 text-mote ring-1 ring-white/10">
-              <Repeat1 size={14} strokeWidth={1.75} />
+            <div className="absolute -bottom-1 -right-1 z-[3] flex h-9 w-9 items-center justify-center rounded-full bg-mote text-bg0 shadow-[0_0_16px_-2px_rgba(216,247,155,0.8)] border-2 border-bg0">
+              <Repeat1 size={16} />
             </div>
           )}
         </div>
 
-        {/* Title / artist — quiet, no card, just type */}
-        <div className="w-full max-w-[300px] text-center">
-          <div className="mb-1 truncate font-display text-lg font-medium">{decodeHtmlEntities(song.name)}</div>
-          <div className="truncate text-sm font-light text-muted">{decodeHtmlEntities(artistName(song))}</div>
+        {/* Glass card for title / artist, now with a mini waveform accent */}
+        <div className="w-full max-w-[340px] rounded-2xl border border-white/10 bg-white/[0.05] px-5 py-4 backdrop-blur-xl shadow-[0_8px_30px_-10px_rgba(0,0,0,0.4)]">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 text-left">
+              <div className="mb-1 truncate font-display text-xl font-bold">{decodeHtmlEntities(song.name)}</div>
+              <div className="truncate text-sm text-muted">{decodeHtmlEntities(artistName(song))}</div>
+            </div>
+            <Waveform active={isPlaying} />
+          </div>
         </div>
 
-        {/* Seek bar */}
-        <div className="w-full max-w-[300px]">
+        <div className="w-full max-w-[340px]">
           <input
             type="range"
             className="kd-range w-full"
@@ -142,40 +221,41 @@ export default function FullPlayerSheet() {
             value={currentTime}
             onChange={(e) => requestSeek(Number(e.target.value))}
             style={{
-              background: `linear-gradient(90deg, var(--color-mote) ${pct}%, rgba(255,255,255,0.1) ${pct}%)`,
+              background: `linear-gradient(90deg, var(--color-mote) ${pct}%, rgba(255,255,255,0.14) ${pct}%)`,
             }}
             aria-label="Seek"
           />
-          <div className="mt-1.5 flex justify-between font-mono text-[0.65rem] text-muted/70">
+          <div className="mt-1.5 flex justify-between font-mono text-xs text-muted">
             <span>{fmtTime(currentTime)}</span>
             <span>{fmtTime(duration)}</span>
           </div>
         </div>
 
-        <div className="scale-105 sm:scale-110">
-          <PlaybackControls />
+        {/* Playback controls + repeat toggle in one row */}
+        <div className="flex w-full max-w-[340px] items-center justify-center gap-4 pb-2">
+          <div className="scale-110 sm:scale-125">
+            <PlaybackControls />
+          </div>
         </div>
 
-        {/* Repeat — quiet ghost toggle, no pill/border noise */}
         <button
           type="button"
           onClick={cycleRepeatMode}
           aria-label={repeatLabel}
           title={repeatLabel}
-          className={`flex items-center gap-1.5 text-xs font-light tracking-wide transition-colors active:scale-95 ${
-            repeatMode !== 'off' ? 'text-mote' : 'text-muted/60 hover:text-muted'
+          className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium backdrop-blur-md transition-all active:scale-95 ${
+            repeatMode !== 'off'
+              ? 'border-transparent bg-mote text-bg0 shadow-[0_0_16px_-2px_rgba(216,247,155,0.7)]'
+              : 'border-white/10 bg-white/[0.06] text-muted hover:border-mote/50 hover:text-ink'
           }`}
         >
-          {repeatMode === 'one' ? (
-            <Repeat1 size={14} strokeWidth={1.5} />
-          ) : (
-            <Repeat size={14} strokeWidth={1.5} />
-          )}
+          {repeatMode === 'one' ? <Repeat1 size={15} /> : <Repeat size={15} />}
           {repeatLabel}
         </button>
 
-        {/* Volume — thin track, icon only, no pill container */}
-        <div className="flex w-full max-w-[300px] items-center gap-3">
+        {/* Volume control — glass pill. Store has no mute flag, so muting
+            just remembers the last non-zero volume and restores it. */}
+        <div className="flex w-full max-w-[340px] items-center gap-3 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 backdrop-blur-xl">
           <button
             type="button"
             onClick={() => {
@@ -187,14 +267,14 @@ export default function FullPlayerSheet() {
               }
             }}
             aria-label={volume === 0 ? 'Unmute' : 'Mute'}
-            className="flex h-7 w-7 shrink-0 items-center justify-center text-muted transition-colors hover:text-ink active:scale-90"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink transition-all hover:bg-white/[0.08] active:scale-90"
           >
             {volume === 0 ? (
-              <VolumeX size={16} strokeWidth={1.5} />
+              <VolumeX size={18} />
             ) : volume < 50 ? (
-              <Volume1 size={16} strokeWidth={1.5} />
+              <Volume1 size={18} />
             ) : (
-              <Volume2 size={16} strokeWidth={1.5} />
+              <Volume2 size={18} />
             )}
           </button>
           <input
@@ -206,7 +286,7 @@ export default function FullPlayerSheet() {
             value={volume}
             onChange={(e) => setVolume(Number(e.target.value))}
             style={{
-              background: `linear-gradient(90deg, var(--color-mote) ${volume}%, rgba(255,255,255,0.1) ${volume}%)`,
+              background: `linear-gradient(90deg, var(--color-mote) ${volume}%, rgba(255,255,255,0.14) ${volume}%)`,
             }}
             aria-label="Volume"
           />
@@ -214,17 +294,21 @@ export default function FullPlayerSheet() {
       </div>
 
       <style>{`
-        @keyframes spark1 {
-          0%, 100% { transform: translate(0, 0); opacity: 0.7; }
-          50% { transform: translate(10px, -14px); opacity: 0.2; }
+        @keyframes fullSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
-        @keyframes spark2 {
-          0%, 100% { transform: translate(0, 0); opacity: 0.6; }
-          50% { transform: translate(-14px, 10px); opacity: 0.15; }
+        @keyframes driftA {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(20px, 30px) scale(1.15); }
         }
-        @keyframes spark3 {
-          0%, 100% { transform: translate(0, 0); opacity: 0.5; }
-          50% { transform: translate(8px, 12px); opacity: 0.1; }
+        @keyframes driftB {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-25px, -20px) scale(1.1); }
+        }
+        @keyframes wfBar {
+          from { height: 4px; }
+          to { height: 16px; }
         }
       `}</style>
     </div>
