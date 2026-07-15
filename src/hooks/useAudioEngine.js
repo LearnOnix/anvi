@@ -89,7 +89,20 @@ export function useAudioEngine() {
       }
       setProgress(audioEl.currentTime, audioEl.duration || 0)
     }
-    const onEnded = () => next()
+    const onEnded = () => {
+      // 'one' -> replay the exact same song instead of advancing.
+      // 'all' / 'off' both fall through to next(); next() already wraps
+      // around the queue with modulo, so 'all' needs no special case —
+      // the only real difference for 'off' would be stopping at the end
+      // of the queue, which this app doesn't currently do anyway.
+      const { repeatMode } = usePlayer.getState()
+      if (repeatMode === 'one') {
+        audioEl.currentTime = 0
+        audioEl.play().catch(() => {})
+        return
+      }
+      next()
+    }
     const onError = () => { if (audioEl.src) next() }
 
     audioEl.addEventListener('timeupdate', onTime)

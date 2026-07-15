@@ -22,6 +22,7 @@ export const usePlayer = create(
       currentTime: 0,
       duration: 0,
       seekTarget: null, // bumped whenever the user drags the seek bar
+      repeatMode: 'off', // 'off' | 'all' | 'one'
 
       currentSong: () => {
         const { queue, currentIndex } = get()
@@ -38,6 +39,12 @@ export const usePlayer = create(
       },
 
       togglePlay: () => set((s) => ({ isPlaying: !s.isPlaying })),
+
+      cycleRepeatMode: () =>
+        set((s) => ({
+          repeatMode:
+            s.repeatMode === 'off' ? 'all' : s.repeatMode === 'all' ? 'one' : 'off',
+        })),
 
       next: () => {
         const { queue, currentIndex } = get()
@@ -68,6 +75,7 @@ export const usePlayer = create(
         currentIndex: s.currentIndex,
         volume: s.volume,
         currentTime: s.currentTime,
+        repeatMode: s.repeatMode,
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return
