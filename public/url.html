@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Bookmarklet Setup</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+      background: #f5f6f8;
+      color: #17181b;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 620px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e7e8eb;
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.06);
+    }
+
+    .header {
+      margin-bottom: 26px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      margin-bottom: 12px;
+      border-radius: 999px;
+      background: #f0f1f3;
+      color: #555960;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    h1 {
+      font-size: 28px;
+      line-height: 1.2;
+      letter-spacing: -0.7px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #686c73;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .code-wrapper {
+      position: relative;
+      margin-bottom: 26px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      resize: vertical;
+      border: 1px solid #dedfe3;
+      border-radius: 12px;
+      padding: 15px;
+      padding-right: 15px;
+      background: #fafafa;
+      color: #292b30;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #b9bbc1;
+    }
+
+    .copy-btn {
+      width: 100%;
+      margin-top: 10px;
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 16px;
+      background: #17181b;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: #303136;
+    }
+
+    .copy-btn:active {
+      transform: scale(0.99);
+    }
+
+    .instructions {
+      border-top: 1px solid #ececef;
+      padding-top: 24px;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .number {
+      min-width: 25px;
+      height: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #f0f1f3;
+      color: #36383d;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .step-text {
+      font-size: 13px;
+      line-height: 1.55;
+      color: #555960;
+      padding-top: 2px;
+    }
+
+    .step-text strong {
+      color: #24262a;
+    }
+
+    .youtube {
+      margin-top: 25px;
+      padding-top: 22px;
+      border-top: 1px solid #ececef;
+      text-align: center;
+    }
+
+    .youtube-label {
+      font-size: 11px;
+      color: #92959b;
+      margin-bottom: 9px;
+    }
+
+    .youtube-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 13px;
+      border-radius: 8px;
+      background: #f3f3f4;
+      color: #34363a;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
+
+    .youtube-btn:hover {
+      background: #e8e8ea;
+    }
+
+    .play-icon {
+      width: 15px;
+      height: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      background: #ff0000;
+      color: #fff;
+      font-size: 8px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 11px;
+      color: #a0a2a7;
+    }
+
+    @media (max-width: 500px) {
+      body {
+        padding: 14px;
+      }
+
+      .card {
+        padding: 22px;
+        border-radius: 15px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      textarea {
+        height: 180px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="container">
+    <div class="card">
+
+      <div class="header">
+        <span class="badge">Bookmarklet Tool</span>
+
+        <h1>Install Bookmarklet</h1>
+
+        <p class="subtitle">
+          Copy the URL below and save it as a browser bookmark to use the tool.
+        </p>
+      </div>
+
+
+      <div class="section-title">
+        Bookmark URL
+      </div>
+
+      <div class="code-wrapper">
+        <textarea id="bookmarklet" readonly>javascript:(()=>{const s=document.createElement('script');s.src='https://inspect.madewith.me/tools.js?v='+Date.now();s.onload=()=>console.log('Tools loaded — latest version');s.onerror=()=>alert('Tools load nahi hua');document.head.appendChild(s)})()</textarea>
+
+        <button class="copy-btn" id="copyBtn" onclick="copyBookmarklet()">
+          Copy Bookmark URL
+        </button>
+      </div>
+
+
+      <div class="instructions">
+
+        <div class="section-title">
+          How to add it
+        </div>
+
+        <div class="steps">
+
+          <div class="step">
+            <div class="number">1</div>
+            <div class="step-text">
+              Copy the complete <strong>Bookmark URL</strong> using the button above.
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="number">2</div>
+            <div class="step-text">
+              Open your browser's <strong>Bookmarks / Bookmark Manager</strong>
+              and create a new bookmark.
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="number">3</div>
+            <div class="step-text">
+              Give the bookmark any name you want, then paste the copied code
+              into the <strong>URL / Address</strong> field.
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="number">4</div>
+            <div class="step-text">
+              Save the bookmark. Open the page where you want to use it and
+              click the bookmark.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+
+      <div class="youtube">
+
+        <div class="youtube-label">
+          Quick tutorial
+        </div>
+
+        <a
+          class="youtube-btn"
+          href="https://youtu.be/lMB2syeYcCY?si=bMPUm3Po2umXnKQW"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="play-icon">▶</span>
+          Watch on YouTube
+        </a>
+
+      </div>
+
+    </div>
+
+    <div class="footer">
+      Bookmarklet Setup
+    </div>
+  </main>
+
+
+  <script>
+    async function copyBookmarklet() {
+      const textarea = document.getElementById("bookmarklet");
+      const button = document.getElementById("copyBtn");
+
+      try {
+        await navigator.clipboard.writeText(textarea.value);
+
+        button.textContent = "Copied ✓";
+
+        setTimeout(() => {
+          button.textContent = "Copy Bookmark URL";
+        }, 1800);
+
+      } catch (error) {
+        textarea.select();
+        textarea.setSelectionRange(0, textarea.value.length);
+
+        document.execCommand("copy");
+
+        button.textContent = "Copied ✓";
+
+        setTimeout(() => {
+          button.textContent = "Copy Bookmark URL";
+        }, 1800);
+      }
+    }
+  </script>
+
+</body>
+  </html>
